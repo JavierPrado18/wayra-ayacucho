@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import 'package:wayra_ayacucho/Business/Entities/place.dart';
 import 'package:wayra_ayacucho/presentation/providers/providers.dart';
 
 class FormScreen extends StatelessWidget {
@@ -16,7 +16,9 @@ class FormScreen extends StatelessWidget {
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Formulario'),
+          title:
+              Text(formularioProvider.id == null ? "Crear " : "Cambiar Datos"),
+          centerTitle: true,
         ),
         body: Form(
             key: formKey,
@@ -51,7 +53,7 @@ class FormScreen extends StatelessWidget {
                               final XFile? photo = await picker.pickImage(
                                   source: ImageSource.camera);
                               if (photo == null) return;
-                              formularioProvider.uploadImage(photo.path);
+                              formularioProvider.setImagen(photo.path);
                             },
                           ),
                         ),
@@ -61,7 +63,7 @@ class FormScreen extends StatelessWidget {
                 ),
                 // Título
                 const SizedBox(
-                  height: 12,
+                  height: 20,
                 ),
                 TextFormField(
                   controller: formularioProvider.tituloController,
@@ -70,7 +72,7 @@ class FormScreen extends StatelessWidget {
                       value!.isEmpty ? 'Requiere título' : null,
                 ),
                 const SizedBox(
-                  height: 12,
+                  height: 16,
                 ),
                 // Descripción
                 TextFormField(
@@ -87,21 +89,31 @@ class FormScreen extends StatelessWidget {
                 // Festividad o lugar
                 Row(
                   children: [
-                    const Text("Tipo"),
+                    const Text(
+                      "Tipo :",
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
                     Radio(
                       value: true,
                       groupValue: formularioProvider.esFestividad,
                       onChanged: (value) =>
                           formularioProvider.setEsFestividad(true),
                     ),
-                    const Text('Festividad'),
+                    const Text(
+                      'Festividad',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
                     Radio(
                       value: false,
                       groupValue: formularioProvider.esFestividad,
                       onChanged: (value) =>
                           formularioProvider.setEsFestividad(false),
                     ),
-                    const Text('Lugar'),
+                    const Text(
+                      'Lugar',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
                   ],
                 ),
                 const SizedBox(
@@ -131,13 +143,19 @@ class FormScreen extends StatelessWidget {
                   Column(
                     children: [
                       SwitchListTile(
-                        title: const Text('Activar ubicacion'),
+                        title: const Text(
+                          'Cambiar ubicacion actual',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                         value: formularioProvider.pedirPermisosUbicacion,
                         onChanged: (value) =>
                             formularioProvider.setPedirPermisosUbicacion(value),
                       ),
                       Row(
                         children: [
+                          const SizedBox(
+                            width: 16,
+                          ),
                           const Text(
                             "Categoria:",
                             style: TextStyle(
@@ -147,6 +165,10 @@ class FormScreen extends StatelessWidget {
                             width: 20,
                           ),
                           DropdownButton(
+                              borderRadius: BorderRadius.circular(12),
+                              dropdownColor:
+                                  const Color.fromARGB(230, 213, 209, 209),
+                              underline: Container(),
                               value: formularioProvider.categoryId,
                               items: const [
                                 DropdownMenuItem(
@@ -160,30 +182,32 @@ class FormScreen extends StatelessWidget {
                               ],
                               onChanged: (value) {
                                 formularioProvider.setCategoryId(value);
-                                print(value);
                               }),
                         ],
                       )
                     ],
                   ),
                 const SizedBox(
-                  height: 12,
+                  height: 20,
                 ),
                 // Botón de guardar
-                ElevatedButton(
-                    child: const Text("Guardar"),
+                FilledButton.tonal(
                     onPressed: () {
                       if (formKey.currentState!.validate()) {
                         formKey.currentState!.save();
-                        formularioProvider.submitForm(Place(
-                            latitude: formularioProvider.latitude,
-                            longitute: formularioProvider.longitude,
-                            imageUrl: formularioProvider.imagen,
-                            description: formularioProvider.descripcion,
-                            title: formularioProvider.titulo,
-                            idCategory: formularioProvider.categoryId));
+
+                        formularioProvider.submitForm();
+                        if (formularioProvider.esFestividad) {
+                          context.read<FestivitiesProvider>().getFestivities();
+                        } else {
+                          context.read<PlacesProvider>().getPlaces();
+                        }
+
+                        context.push("/");
                       }
-                    })
+                    },
+                    child: Text(
+                        formularioProvider.id == null ? "Crear" : "Actualizar"))
               ]),
             ))));
   }

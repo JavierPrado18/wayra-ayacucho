@@ -13,6 +13,16 @@ final appRoute = GoRouter(initialLocation: "/", routes: [
         );
       },
     ),
+    GoRoute(
+      path: 'festivities/:id',
+      builder: (context, state) {
+        final id = state.pathParameters['id'] ?? "no-id";
+
+        return FestivityDetailScreen(
+          id: id,
+        );
+      },
+    ),
   ]),
   GoRoute(
     path: '/form',

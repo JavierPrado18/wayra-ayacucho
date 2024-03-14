@@ -18,17 +18,17 @@ class PlacesProvider extends ChangeNotifier {
 
   Future<Place> createPlace(Place newPlace) async {
     final Place place = await placeservice.createPlace(newPlace);
-    notifyListeners();
+    getPlaces();
     return place;
   }
 
-  Future updatePlace(int id,Place place) async {
-    await placeservice.updatePlace(id,place);
-    notifyListeners();
+  Future updatePlace(int id, Place place) async {
+    await placeservice.updatePlace(id, place);
+    getPlaces();
   }
 
-  Future deletePlace( int id) async {
+  Future deletePlace(int id) async {
     await placeservice.deletePlace(id);
-    notifyListeners();
+    getPlaces();
   }
 }

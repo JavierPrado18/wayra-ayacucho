@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_advanced_calendar/flutter_advanced_calendar.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:wayra_ayacucho/Business/Entities/place.dart';
-import 'package:wayra_ayacucho/Business/use_cases/launcher_service.dart';
-import 'package:wayra_ayacucho/presentation/providers/form_provider.dart';
-import 'package:wayra_ayacucho/presentation/providers/place/place_detail_provider.dart';
-import 'package:wayra_ayacucho/presentation/providers/place/places_provider.dart';
+import 'package:wayra_ayacucho/Business/Entities/festivity.dart';
+import 'package:wayra_ayacucho/presentation/providers/providers.dart';
 
-class PlaceDetailScreen extends StatelessWidget {
-  const PlaceDetailScreen({
+class FestivityDetailScreen extends StatelessWidget {
+  const FestivityDetailScreen({
     Key? key,
     required this.id,
   }) : super(key: key);
@@ -17,7 +15,7 @@ class PlaceDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => PlaceDetailProvider(),
+      create: (context) => FestivitiesProvider(),
       child: _PlaceDetailView(id: id),
     );
   }
@@ -32,19 +30,19 @@ class _PlaceDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final placeDetailProvider =
-        Provider.of<PlaceDetailProvider>(context, listen: false);
+    final festivityProvider =
+        Provider.of<FestivitiesProvider>(context, listen: false);
     final size = MediaQuery.of(context).size;
     return Scaffold(
       body: FutureBuilder(
-        future: placeDetailProvider.getPlaceById(id),
+        future: festivityProvider.getFestivityById(id),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            final place = snapshot.data!;
+            final festivity = snapshot.data!;
             return CustomScrollView(
               physics: const ClampingScrollPhysics(),
               slivers: [
-                _CustonSliverAppBar(size: size, place: place),
+                _CustonSliverAppBar(size: size, festivity: festivity),
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
                       (context, index) => Padding(
@@ -69,16 +67,16 @@ class _PlaceDetailView extends StatelessWidget {
                                               context
                                                   .read<FormularioProvider>()
                                                   .changeValuesForm(
-                                                      title: place.title,
+                                                      title: festivity.nombre,
                                                       description:
-                                                          place.description,
-                                                      category:
-                                                          place.idCategory,
-                                                      image: place.imageUrl,
-                                                      latitude: place.latitude,
-                                                      longitude:
-                                                          place.longitute,
-                                                      id: place.id);
+                                                          festivity.descripcion,
+                                                      image: festivity.imgUrl,
+                                                      fecha: DateTime.utc(
+                                                          2024,
+                                                          festivity.mes!,
+                                                          festivity.dia!),
+                                                      isFestivity: true,
+                                                      id: festivity.id);
                                               context.pushReplacement("/form");
                                             },
                                             icon: const Icon(Icons.edit)),
@@ -88,8 +86,9 @@ class _PlaceDetailView extends StatelessWidget {
                                         IconButton.filledTonal(
                                             onPressed: () {
                                               context
-                                                  .read<PlacesProvider>()
-                                                  .deletePlace(place.id!);
+                                                  .read<FestivitiesProvider>()
+                                                  .deleteFestivity(
+                                                      festivity.id!);
                                               context.pushReplacement("/");
                                             },
                                             icon: const Icon(Icons.delete)),
@@ -97,19 +96,24 @@ class _PlaceDetailView extends StatelessWidget {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 16,),
-                                Text(place.description),
                                 const SizedBox(
                                   height: 16,
                                 ),
-                                Center(
-                                  child: FilledButton(
-                                      onPressed: ()async {
-                                        await LauncherService().openGoogleMaps(
-                                            place.latitude, place.longitute);
-                                      },
-                                      child: const Text("Ver en el mapa")),
-                                )
+                                Text(festivity.descripcion),
+                                const SizedBox(
+                                  height: 16,
+                                ),
+                                const Divider(),
+                                AdvancedCalendar(
+                                  controller: AdvancedCalendarController(
+                                      DateTime.utc(2024, festivity.mes!,
+                                          festivity.dia!)),
+                                  events: [
+                                    DateTime.utc(
+                                        2024, festivity.mes!, festivity.dia!)
+                                  ],
+                                  startWeekDay: 1,
+                                ),
                               ],
                             ),
                           ),
@@ -129,11 +133,11 @@ class _PlaceDetailView extends StatelessWidget {
 class _CustonSliverAppBar extends StatelessWidget {
   const _CustonSliverAppBar({
     required this.size,
-    required this.place,
+    required this.festivity,
   });
 
   final Size size;
-  final Place place;
+  final Festivity festivity;
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +150,7 @@ class _CustonSliverAppBar extends StatelessWidget {
             child: Image.network(
               height: double.infinity,
               width: double.infinity,
-              place.imageUrl,
+              festivity.imgUrl,
               fit: BoxFit.cover,
             ),
           ),
@@ -173,7 +177,7 @@ class _CustonSliverAppBar extends StatelessWidget {
         ]),
         titlePadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         title: Text(
-          place.title,
+          festivity.nombre,
           style: const TextStyle(fontSize: 20),
           textAlign: TextAlign.start,
         ),

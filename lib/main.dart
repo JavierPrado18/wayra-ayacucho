@@ -7,9 +7,9 @@ import 'package:wayra_ayacucho/presentation/providers/providers.dart';
 void main() => runApp(
   MultiProvider(providers: [
     ChangeNotifierProvider(create: (context) => IndexPageProvider(),),
-    ChangeNotifierProvider(create: (context) => CourseProvider(),),
     ChangeNotifierProvider(create: (context) => PlacesProvider(),),
     ChangeNotifierProvider(create: (context) => FormularioProvider(),),
+    ChangeNotifierProvider(create: (context) => FestivitiesProvider(),),
 
   ],
   child:const MyApp() ,)

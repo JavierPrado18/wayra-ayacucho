@@ -1,13 +1,17 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:wayra_ayacucho/Business/Entities/festivity.dart';
 import 'package:wayra_ayacucho/Business/Entities/place.dart';
+import 'package:wayra_ayacucho/Business/use_cases/festivities_service.dart';
 import 'package:wayra_ayacucho/Business/use_cases/geolocator_servoce.dart';
 import 'package:wayra_ayacucho/Business/use_cases/places_service.dart';
 import 'package:http/http.dart' as http;
 
 class FormularioProvider extends ChangeNotifier {
   final placeService = PlacesService();
+  final festivityService = FestivitiesService();
+  final locationServie = GeolocatorService();
 
   // Text editing controllers for form fields
   final TextEditingController tituloController = TextEditingController();
@@ -29,6 +33,8 @@ class FormularioProvider extends ChangeNotifier {
   double longitude = 0;
   int? id;
 
+
+
   // Setters for form field values (updating controllers and notifying listeners)
   void setTitulo(String titulo) {
     tituloController.text = titulo;
@@ -38,13 +44,18 @@ class FormularioProvider extends ChangeNotifier {
     descripcionController.text = descripcion;
   }
 
-  void setImagen(String imagen) {
-    imagenController.text = imagen;
+  void setImagen(String path) async {
+    if (path.startsWith("http")) {
+      imagenController.text = path;
+    } else {
+      final newImage = await uploadImage(path);
+      imagenController.text = newImage!;
+    }
+
     notifyListeners();
   }
 
-Future<String?> uploadImage(String path) async {
-    
+  Future<String?> uploadImage(String path) async {
     //ponemos la url del cloudynari
     final url = Uri.parse(
         'https://api.cloudinary.com/v1_1/duxzbm4vb/image/upload?upload_preset=trer70za');
@@ -53,7 +64,7 @@ Future<String?> uploadImage(String path) async {
     final imageUploadRequest = http.MultipartRequest('POST', url);
 
     //este es el archibvo que queremos mandar
-    final file = await http.MultipartFile.fromPath('file', imagen);
+    final file = await http.MultipartFile.fromPath('file', path);
 
     imageUploadRequest.files.add(file);
 
@@ -68,7 +79,6 @@ Future<String?> uploadImage(String path) async {
     final responseData = json.decode(response.body);
     return responseData['secure_url'];
   }
-
 
   void setFecha(DateTime? fecha) {
     fechaController.text = fecha.toString();
@@ -94,7 +104,8 @@ Future<String?> uploadImage(String path) async {
 
   void setPedirPermisosUbicacion(bool value) async {
     _pedirPermisosUbicacion = value;
-    final location = await GeolocatorService().determinePosition();
+
+    final location = await locationServie.determinePosition();
     latitude = location.latitude;
     longitude = location.longitude;
     notifyListeners();
@@ -134,17 +145,40 @@ Future<String?> uploadImage(String path) async {
     this.id = id;
   }
 
-  // Example logic for form submission (replace with your actual implementation)
-  void submitForm(Place place) {
+  void submitForm() async {
     if (validateForm()) {
-      // Process form data
-      if (place.id == null) {
-        placeService.createPlace(place);
-      } else {
-        placeService.updatePlace(place.id!, place);
+
+      if (_esFestividad) {
+        final festivity = Festivity(
+            nombre: titulo,
+            descripcion: descripcion,
+            imgUrl: imagen,
+            dia: fecha?.day,
+            mes: fecha?.month,
+            id: id);
+        if (festivity.id == null) {
+          await festivityService.createFestivity(festivity);
+        } else {
+          await festivityService.updateFestivity(festivity.id!, festivity);
+        }
+
+      }else{
+        final place = Place(
+          latitude: latitude,
+          longitute: longitude,
+          imageUrl: imagen,
+          description: descripcion,
+          title: titulo,
+          idCategory: categoryId,
+          id: id);
+        if (place.id == null) {
+          await placeService.createPlace(place);
+        } else {
+          await placeService.updatePlace(place.id!, place);
+        }
+        setPedirPermisosUbicacion(false);
       }
-    } else {
-      print('Formulario inválido');
+      notifyListeners();
     }
   }
 }

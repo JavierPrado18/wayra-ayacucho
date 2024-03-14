@@ -7,7 +7,7 @@ class AppTheme {
         useMaterial3: true,
         colorSchemeSeed: colorSeed,
         iconTheme: const IconThemeData(color: colorSeed),
-        appBarTheme: AppBarTheme(
+        appBarTheme:const AppBarTheme(
             backgroundColor: colorSeed, foregroundColor: Colors.white));
   }
 }

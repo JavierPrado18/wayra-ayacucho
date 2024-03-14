@@ -16,7 +16,7 @@ class HorizontalListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 310,
+      height: 300,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(children: [
@@ -55,18 +55,23 @@ class _Slide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textStyles = Theme.of(context).textTheme;
+    final colors = Theme.of(context).colorScheme;
     return Container(
+      decoration: BoxDecoration(
+          color: colors.primaryContainer,
+          borderRadius: BorderRadius.circular(20)),
       width: 150,
       margin: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         SizedBox(
-          width: 150,
+          width: 180,
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20), topRight: Radius.circular(20)),
             child: Image.network(
               place.imageUrl,
               height: 200,
-              width: 150,
+              width: 180,
               fit: BoxFit.cover,
               loadingBuilder: (context, child, loadingProgress) {
                 if (loadingProgress != null) {
@@ -87,23 +92,13 @@ class _Slide extends StatelessWidget {
           height: 4,
         ),
         Text(
-          place.title,
+          "  ${place.title}",
           style: textStyles.titleSmall,
           maxLines: 2,
         ),
         const SizedBox(
           height: 4,
         ),
-        // Row(
-        //   mainAxisAlignment: MainAxisAlignment.end,
-        //   children: [
-        //     IconButton.filledTonal(onPressed: () {}, icon: Icon(Icons.edit)),
-        //     SizedBox(
-        //       width: 16,
-        //     ),
-        //     IconButton.filledTonal(onPressed: () {}, icon: Icon(Icons.delete)),
-        //   ],
-        // )
       ]),
     );
   }

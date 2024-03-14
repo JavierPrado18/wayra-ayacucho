@@ -12,7 +12,7 @@ class PlacesView extends StatelessWidget {
     final placesProvider = Provider.of<PlacesProvider>(context, listen: false);
     
     return FutureBuilder(
-      future: placesProvider.getPlaces(),
+      future: placesProvider.getPlaces(), 
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final List<PlaceDto> places = snapshot.data!;
@@ -42,6 +42,10 @@ class PlacesView extends StatelessWidget {
                   title: 'Parques',
                 ),
                 HorizontalListView(
+                  places: churches,
+                  title: 'Iglesias',
+                ),
+                HorizontalListView(
                   places: viewpoints,
                   title: 'Miradores',
                 ),
@@ -49,10 +53,7 @@ class PlacesView extends StatelessWidget {
                   places: museums,
                   title: 'Museos',
                 ),
-                HorizontalListView(
-                  places: churches,
-                  title: 'Iglesias',
-                ),
+                
               ],
             ),
           );
